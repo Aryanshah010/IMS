@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -25,11 +26,12 @@ public class inv extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         // Create the sidebar
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
-        sidebar.setBackground(new Color(129, 219, 200));
+        sidebar.setBackground(new Color(247, 124, 247));
         sidebar.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
         JLabel dashboardLabel = createSidebarLabel("Dashboard");
@@ -45,10 +47,7 @@ public class inv extends JFrame {
         // Main content area with CardLayout
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
-        mainPanel.add(createDashboardPanel(), "Dashboard");
-        mainPanel.add(createSalesPanel(), "Sales");
         mainPanel.add(createInventoryPanel(), "Inventory");
-        mainPanel.add(createOrderPanel(), "Order");
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sidebar, mainPanel);
         splitPane.setDividerLocation(150);
@@ -60,12 +59,12 @@ public class inv extends JFrame {
 
     private JLabel createSidebarLabel(String text) {
         JLabel label = new JLabel(text);
-        label.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        label.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
         label.setForeground(Color.BLACK);
         label.setOpaque(true);
-        label.setBackground(new Color(129, 219, 200));
+        label.setBackground(new Color(247, 124, 247));
         label.setHorizontalAlignment(SwingConstants.CENTER);
-        label.setFont(new Font("Arial", Font.PLAIN, 16));
+        label.setFont(new Font("Arial", Font.PLAIN, 18));
         label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -74,7 +73,7 @@ public class inv extends JFrame {
 
             @Override
             public void mouseExited(MouseEvent e) {
-                label.setBackground(new Color(129, 219, 200));
+                label.setBackground(new Color(247, 124, 247));
             }
 
             @Override
@@ -83,20 +82,6 @@ public class inv extends JFrame {
             }
         });
         return label;
-    }
-
-    private JPanel createDashboardPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        // You can customize dashboard panel contents here if needed
-        panel.add(new JLabel("Dashboard Page"), BorderLayout.CENTER);
-        return panel;
-    }
-
-    private JPanel createOrderPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        // You can customize dashboard panel contents here if needed
-        panel.add(new JLabel("Order page"), BorderLayout.CENTER);
-        return panel;
     }
 
     private JPanel createInventoryPanel() {
@@ -113,16 +98,28 @@ public class inv extends JFrame {
                 { "6", "Product 6", "350.00", "8" }
         };
 
-        tableModel = new DefaultTableModel(data, columnNames);
+        // Create a non-editable table model
+        tableModel = new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
         table = new JTable(tableModel);
+        JTableHeader tableHeader = table.getTableHeader();
+        tableHeader.setFont(new Font("Arial", Font.BOLD, 19));
+        tableHeader.setReorderingAllowed(false);
+
         table.setBackground(new Color(240, 240, 240));
         table.setFillsViewportHeight(true);
         table.setRowHeight(30);
+        table.setFont(new Font("Arial", Font.PLAIN, 17));
         JScrollPane tableScrollPane = new JScrollPane(table);
 
         // Create the form to add new products
-        JPanel formPanel = new JPanel(new GridLayout(2, 5, 10, 10));
-        formPanel.setBorder(BorderFactory.createTitledBorder("Add New Product"));
+        JPanel formPanel = new JPanel(new GridLayout(3, 4, 10, 10));
+        formPanel.setBorder(BorderFactory.createTitledBorder("Product Details"));
         formPanel.setBackground(new Color(230, 240, 255));
 
         idField = new JTextField();
@@ -130,7 +127,9 @@ public class inv extends JFrame {
         priceField = new JTextField();
         quantityField = new JTextField();
 
-        JLabel addButton = createFormLabel("Add Product");
+        JLabel editButton = createFormLabel("Edit Product", new Color(255, 184, 108));
+        JLabel addButton = createFormLabel("Add Product", new Color(0, 120, 215));
+
         addButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -140,11 +139,18 @@ public class inv extends JFrame {
                 String quantity = quantityField.getText();
 
                 if (!id.isEmpty() && !name.isEmpty() && !price.isEmpty() && !quantity.isEmpty()) {
-                    tableModel.addRow(new Object[] { id, name, price, quantity });
-                    idField.setText("");
-                    nameField.setText("");
-                    priceField.setText("");
-                    quantityField.setText("");
+                    if (id.matches("\\d+") && name.matches("[\\w\\s]+") && price.matches("\\d*\\.?\\d+")
+                            && quantity.matches("\\d+")) {
+                        tableModel.addRow(new Object[] { id, name, price, quantity });
+                        idField.setText("");
+                        nameField.setText("");
+                        priceField.setText("");
+                        quantityField.setText("");
+                    } else {
+                        JOptionPane.showMessageDialog(inv.this,
+                                "Invalid input format. Please ensure:\n- Product ID and Quantity are integers\n- Price is a float\n- Product Name is alphanumeric",
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 } else {
                     JOptionPane.showMessageDialog(inv.this, "Please fill in all fields", "Error",
                             JOptionPane.ERROR_MESSAGE);
@@ -156,11 +162,12 @@ public class inv extends JFrame {
         formPanel.add(idField);
         formPanel.add(new JLabel("Product Name:"));
         formPanel.add(nameField);
-        formPanel.add(new JLabel(""));
         formPanel.add(new JLabel("Price:"));
         formPanel.add(priceField);
         formPanel.add(new JLabel("Quantity:"));
         formPanel.add(quantityField);
+        formPanel.add(new JLabel(""));
+        formPanel.add(editButton);
         formPanel.add(addButton);
 
         panel.add(tableScrollPane, BorderLayout.CENTER);
@@ -169,28 +176,18 @@ public class inv extends JFrame {
         return panel;
     }
 
-    private JPanel createSalesPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JLabel("Sales  Page"), BorderLayout.CENTER);
-        return panel;
-    }
-
-    private JLabel createFormLabel(String text) {
+    private JLabel createFormLabel(String text, Color bgColor) {
         JLabel label = new JLabel(text, SwingConstants.CENTER);
         label.setForeground(Color.WHITE);
         label.setOpaque(true);
-        label.setBackground(new Color(0, 120, 215));
-        label.setFont(new Font("Arial", Font.BOLD, 14));
+        label.setBackground(bgColor);
+        label.setFont(new Font("Arial", Font.BOLD, 16));
         label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         label.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                label.setBackground(new Color(0, 150, 255));
-            }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                label.setBackground(new Color(0, 120, 215));
+                label.setBackground(bgColor);
             }
         });
         return label;

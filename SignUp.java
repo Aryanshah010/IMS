@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class SignUp {
 
@@ -71,13 +73,27 @@ public class SignUp {
         gbc.gridy++;
         rightPanel.add(new JLabel("Password:"), gbc);
         gbc.gridx = 1;
-        rightPanel.add(new JPasswordField(10), gbc);
+        JPasswordField passwordField = new JPasswordField(10);
+        rightPanel.add(passwordField, gbc);
+        
+        // Add eye button to show/hide password
+        JButton eyeButton = new JButton(new ImageIcon("path/to/eye/icon.png"));
+        eyeButton.setPreferredSize(new Dimension(20, 20));
+        gbc.gridx = 2;
+        rightPanel.add(eyeButton, gbc);
 
         gbc.gridx = 0;
         gbc.gridy++;
         rightPanel.add(new JLabel("Confirm Password:"), gbc);
         gbc.gridx = 1;
-        rightPanel.add(new JPasswordField(10), gbc);
+        JPasswordField confirmPasswordField = new JPasswordField(10);
+        rightPanel.add(confirmPasswordField, gbc);
+        
+        // Add eye button to show/hide confirm password
+        JButton eyeButtonConfirm = new JButton(new ImageIcon("path/to/eye/icon.png"));
+        eyeButtonConfirm.setPreferredSize(new Dimension(20, 20));
+        gbc.gridx = 2;
+        rightPanel.add(eyeButtonConfirm, gbc);
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -97,5 +113,35 @@ public class SignUp {
 
         frame.add(mainPanel);
         frame.setVisible(true);
+
+        // Action listener to toggle password visibility
+        ActionListener togglePasswordVisibility = new ActionListener() {
+            private boolean isPasswordVisible = false;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == eyeButton) {
+                    if (isPasswordVisible) {
+                        passwordField.setEchoChar('*');
+                        eyeButton.setIcon(new ImageIcon("C:\\Users\\DELL\\Desktop\\eye.png"));
+                    } else {
+                        passwordField.setEchoChar((char) 0);
+                        eyeButton.setIcon(new ImageIcon("C:\\Users\\DELL\\Desktop\\eye_slash.png"));
+                    }
+                } else if (e.getSource() == eyeButtonConfirm) {
+                    if (isPasswordVisible) {
+                        confirmPasswordField.setEchoChar('*');
+                        eyeButtonConfirm.setIcon(new ImageIcon("C:\\Users\\DELL\\Desktop\\eye.png"));
+                    } else {
+                        confirmPasswordField.setEchoChar((char) 0);
+                        eyeButtonConfirm.setIcon(new ImageIcon("C:\\Users\\DELL\\Desktop\\eye_slash.png"));
+                    }
+                }
+                isPasswordVisible = !isPasswordVisible;
+            }
+        };
+
+        eyeButton.addActionListener(togglePasswordVisibility);
+        eyeButtonConfirm.addActionListener(togglePasswordVisibility);
     }
 }

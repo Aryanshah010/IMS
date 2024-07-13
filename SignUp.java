@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SignUp {
 
@@ -41,7 +43,7 @@ public class SignUp {
         registerLabel.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.gridwidth = 2;
+        gbc.gridwidth = 3;
         rightPanel.add(registerLabel, gbc);
 
         gbc.gridwidth = 1;
@@ -61,7 +63,8 @@ public class SignUp {
         gbc.gridy++;
         rightPanel.add(new JLabel("Your Personal E-mail:"), gbc);
         gbc.gridx = 1;
-        rightPanel.add(new JTextField(10), gbc);
+        JTextField emailField = new JTextField(10);
+        rightPanel.add(emailField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -75,9 +78,13 @@ public class SignUp {
         gbc.gridx = 1;
         JPasswordField passwordField = new JPasswordField(10);
         rightPanel.add(passwordField, gbc);
-        
+
+        // Load icons
+        ImageIcon eyeIcon = new ImageIcon(new ImageIcon("C:\\Users\\DELL\\Desktop\\eye.png").getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+        ImageIcon eyeSlashIcon = new ImageIcon(new ImageIcon("C:\\Users\\DELL\\Desktop\\eye_slash.png").getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+
         // Add eye button to show/hide password
-        JButton eyeButton = new JButton(new ImageIcon("path/to/eye/icon.png"));
+        JButton eyeButton = new JButton(eyeIcon);
         eyeButton.setPreferredSize(new Dimension(20, 20));
         gbc.gridx = 2;
         rightPanel.add(eyeButton, gbc);
@@ -88,9 +95,9 @@ public class SignUp {
         gbc.gridx = 1;
         JPasswordField confirmPasswordField = new JPasswordField(10);
         rightPanel.add(confirmPasswordField, gbc);
-        
+
         // Add eye button to show/hide confirm password
-        JButton eyeButtonConfirm = new JButton(new ImageIcon("path/to/eye/icon.png"));
+        JButton eyeButtonConfirm = new JButton(eyeIcon);
         eyeButtonConfirm.setPreferredSize(new Dimension(20, 20));
         gbc.gridx = 2;
         rightPanel.add(eyeButtonConfirm, gbc);
@@ -120,21 +127,22 @@ public class SignUp {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == eyeButton) {
+                JButton source = (JButton) e.getSource();
+                if (source == eyeButton) {
                     if (isPasswordVisible) {
                         passwordField.setEchoChar('*');
-                        eyeButton.setIcon(new ImageIcon("C:\\Users\\DELL\\Desktop\\eye.png"));
+                        eyeButton.setIcon(eyeIcon);
                     } else {
                         passwordField.setEchoChar((char) 0);
-                        eyeButton.setIcon(new ImageIcon("C:\\Users\\DELL\\Desktop\\eye_slash.png"));
+                        eyeButton.setIcon(eyeSlashIcon);
                     }
-                } else if (e.getSource() == eyeButtonConfirm) {
+                } else if (source == eyeButtonConfirm) {
                     if (isPasswordVisible) {
                         confirmPasswordField.setEchoChar('*');
-                        eyeButtonConfirm.setIcon(new ImageIcon("C:\\Users\\DELL\\Desktop\\eye.png"));
+                        eyeButtonConfirm.setIcon(eyeIcon);
                     } else {
                         confirmPasswordField.setEchoChar((char) 0);
-                        eyeButtonConfirm.setIcon(new ImageIcon("C:\\Users\\DELL\\Desktop\\eye_slash.png"));
+                        eyeButtonConfirm.setIcon(eyeSlashIcon);
                     }
                 }
                 isPasswordVisible = !isPasswordVisible;
@@ -143,5 +151,34 @@ public class SignUp {
 
         eyeButton.addActionListener(togglePasswordVisibility);
         eyeButtonConfirm.addActionListener(togglePasswordVisibility);
+
+        // Action listener to check mandatory fields and show dialog if necessary
+        signUpButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String email = emailField.getText();
+                String password = new String(passwordField.getPassword());
+                String confirmPassword = new String(confirmPasswordField.getPassword());
+
+                if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame, "Email, Password, and Confirm Password fields are mandatory.", "Error", JOptionPane.ERROR_MESSAGE);
+                } else if (!isValidEmail(email)) {
+                    JOptionPane.showMessageDialog(frame, "Please enter a valid email address.", "Error", JOptionPane.ERROR_MESSAGE);
+                } else if (!password.equals(confirmPassword)) {
+                    JOptionPane.showMessageDialog(frame, "Passwords do not match.", "Error", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    // Proceed with the registration process
+                    JOptionPane.showMessageDialog(frame, "Registration Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        });
+    }
+
+    // Method to validate email using regular expression
+    private static boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
+        Pattern pattern = Pattern.compile(emailRegex);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
     }
 }

@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class inv extends JFrame {
+public class Inv extends JFrame {
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -15,10 +15,10 @@ public class inv extends JFrame {
     private JTextField priceField;
     private JTextField quantityField;
 
-    private CardLayout cardLayout;
-    private JPanel mainPanel;
+    public CardLayout cardLayout;
+    JPanel mainPanel;
 
-    public inv() {
+    public Inv() {
 
         setTitle("INVENTIFY");
         setSize(750, 400);
@@ -27,6 +27,7 @@ public class inv extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setBackground(new Color(245, 164, 241));
 
         // Create the sidebar
         JPanel sidebar = new JPanel();
@@ -35,19 +36,21 @@ public class inv extends JFrame {
         sidebar.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
         JLabel dashboardLabel = createSidebarLabel("Dashboard");
-        JLabel salesLabel = createSidebarLabel("Sales");
         JLabel inventoryLabel = createSidebarLabel("Inventory");
-        JLabel orderLabel = createSidebarLabel("Order");
+        JLabel salesLabel = createSidebarLabel("Sales Order");
 
         sidebar.add(dashboardLabel);
-        sidebar.add(salesLabel);
         sidebar.add(inventoryLabel);
-        sidebar.add(orderLabel);
+        sidebar.add(salesLabel);
 
         // Main content area with CardLayout
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
         mainPanel.add(createInventoryPanel(), "Inventory");
+
+        // Add the Sales panel
+        Sales sales = new Sales();
+        mainPanel.add(sales.createSalesPanel(this), "Sales Order");
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sidebar, mainPanel);
         splitPane.setDividerLocation(150);
@@ -55,6 +58,31 @@ public class inv extends JFrame {
 
         // Add components to the frame
         add(splitPane, BorderLayout.CENTER);
+
+        // Add action listeners for the sidebar labels
+        dashboardLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Switch to dashboard panel
+                cardLayout.show(mainPanel, "Dashboard");
+            }
+        });
+
+        inventoryLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Switch to inventory panel
+                cardLayout.show(mainPanel, "Inventory");
+            }
+        });
+
+        salesLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Switch to sales panel
+                cardLayout.show(mainPanel, "Sales Order");
+            }
+        });
     }
 
     private JLabel createSidebarLabel(String text) {
@@ -76,10 +104,6 @@ public class inv extends JFrame {
                 label.setBackground(new Color(247, 124, 247));
             }
 
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                cardLayout.show(mainPanel, text);
-            }
         });
         return label;
     }
@@ -147,14 +171,25 @@ public class inv extends JFrame {
                         priceField.setText("");
                         quantityField.setText("");
                     } else {
-                        JOptionPane.showMessageDialog(inv.this,
+                        JOptionPane.showMessageDialog(Inv.this,
                                 "Invalid input format. Please ensure:\n- Product ID and Quantity are integers\n- Price is a float\n- Product Name is alphanumeric",
                                 "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 } else {
-                    JOptionPane.showMessageDialog(inv.this, "Please fill in all fields", "Error",
+                    JOptionPane.showMessageDialog(Inv.this, "Please fill in all fields", "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
+            }
+        });
+
+        editButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                dispose(); // Close the current window
+                SwingUtilities.invokeLater(() -> {
+                    EditProduct editProductFrame = new EditProduct();
+                    editProductFrame.setVisible(true);
+                });
             }
         });
 
@@ -170,6 +205,10 @@ public class inv extends JFrame {
         formPanel.add(editButton);
         formPanel.add(addButton);
 
+        // Set the font for all form panel components
+        Font formFont = new Font("Arial", Font.BOLD, 16);
+        setFormPanelFont(formPanel, formFont);
+
         panel.add(tableScrollPane, BorderLayout.CENTER);
         panel.add(formPanel, BorderLayout.SOUTH);
 
@@ -184,6 +223,10 @@ public class inv extends JFrame {
         label.setFont(new Font("Arial", Font.BOLD, 16));
         label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         label.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                label.setBackground(bgColor.darker());
+            }
 
             @Override
             public void mouseExited(MouseEvent e) {
@@ -193,9 +236,17 @@ public class inv extends JFrame {
         return label;
     }
 
+    private void setFormPanelFont(Container container, Font font) {
+        for (Component component : container.getComponents()) {
+            if (component instanceof JLabel || component instanceof JTextField) {
+                component.setFont(font);
+            }
+        }
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            inv frame = new inv();
+            Inv frame = new Inv();
             frame.setVisible(true);
         });
     }

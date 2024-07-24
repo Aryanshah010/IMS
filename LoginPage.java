@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicButtonUI;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -6,72 +8,103 @@ public class LoginPage {
     public static void main(String[] args) {
         // Create the frame
         JFrame frame = new JFrame("Login Page");
-        frame.setSize(900, 500); // Increased frame size
+        frame.setSize(820, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(null);
+        frame.setResizable(false);
+        frame.setLocationRelativeTo(null);
+        frame.setLayout(new BorderLayout());
 
-        // Create and place the photo (logo)
+        JPanel imagePanel = new JPanel();
+        imagePanel.setLayout(new BorderLayout());
+
         JLabel photoLabel = new JLabel();
-        ImageIcon icon = new ImageIcon("PROJECT1.jpg"); // Path to your image file
-        photoLabel.setIcon(icon);
-        photoLabel.setBounds(350, 20, 600, 450); // Adjust bounds as needed
-        frame.add(photoLabel);
+        ImageIcon icon = new ImageIcon("PROJECT1.jpg");
+        Image img = icon.getImage().getScaledInstance(530, 500, Image.SCALE_SMOOTH);
+        photoLabel.setIcon(new ImageIcon(img));
+        imagePanel.add(photoLabel, BorderLayout.CENTER);
 
-        // Create and place the username label and text field
+        // Create and configure the login panel
+        JPanel loginPanel = new JPanel();
+        loginPanel.setLayout(null);
+        loginPanel.setBackground(new Color(245, 164, 241));
+        loginPanel.setPreferredSize(new Dimension(300, 500));
+
+        JLabel loginLabel = new JLabel("Login");
+        loginLabel.setBounds(118, 25, 89, 30);
+        loginLabel.setFont(new Font("Arial", Font.PLAIN, 23));
+        loginPanel.add(loginLabel);
+
+        JLabel orLabel = new JLabel("OR");
+        orLabel.setBounds(30, 330, 80, 25);
+        orLabel.setFont(new Font("Arial", Font.PLAIN, 15));
+        loginPanel.add(orLabel);
+
+        JLabel signUpLabel = new JLabel("Don't have Account?");
+        signUpLabel.setBounds(30, 370, 150, 25);
+        signUpLabel.setFont(new Font("Arial", Font.BOLD, 15));
+        loginPanel.add(signUpLabel);
+
+        JButton signUp = new JButton("Sign Up");
+        signUp.setBounds(185, 368, 100, 25);
+        signUp.setFont(new Font("Arial", Font.BOLD, 15));
+        signUp.setBackground(new Color(5, 245, 209));
+        signUp.setOpaque(true);
+        signUp.setUI(new BasicButtonUI());
+        loginPanel.add(signUp);
+
         JLabel usernameLabel = new JLabel("Username:");
-        usernameLabel.setBounds(150, 110, 80, 25);
-        frame.add(usernameLabel);
-
-        JLabel LoginLabel = new JLabel("Login");
-        LoginLabel.setBounds(150, 35, 80, 25);
-        frame.add(LoginLabel);
-
-        JLabel ORLabel = new JLabel("OR");
-        ORLabel.setBounds(150, 320, 80, 25);
-        frame.add(ORLabel);
-    
-
-        // JLabel NewLabel = new JLabel("Already have account?");
-        // NewLabel.setBounds(150, 350, 150, 25);
-        // frame.add(NewLabel);
-        
-        JButton NewButton = new JButton("Already have account?");
-        NewButton.setBounds(150, 370, 170, 25);
-        frame.add(NewButton);
+        usernameLabel.setBounds(30, 90, 150, 25);
+        usernameLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        loginPanel.add(usernameLabel);
 
         JTextField usernameField = new JTextField();
-        usernameField.setBounds(150, 150, 200, 25);
-        frame.add(usernameField);
+        usernameField.setBounds(30, 130, 200, 25);
+        loginPanel.add(usernameField);
 
-        // Create and place the password label and password field
         JLabel passwordLabel = new JLabel("Password:");
-        passwordLabel.setBounds(150, 180, 80, 25);
-        frame.add(passwordLabel);
+        passwordLabel.setBounds(30, 175, 150, 25);
+        passwordLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        loginPanel.add(passwordLabel);
 
         JPasswordField passwordField = new JPasswordField();
-        passwordField.setBounds(150, 220, 200, 25);
-        frame.add(passwordField);
+        passwordField.setBounds(30, 215, 200, 25);
+        loginPanel.add(passwordField);
 
-        // Create and place the login button
         JButton loginButton = new JButton("Login");
-        loginButton.setBounds(175, 270, 150, 25);
-        frame.add(loginButton);
+        loginButton.setBounds(80, 276, 100, 25);
+        loginButton.setBackground(new Color(5, 97, 245));
+        loginButton.setFont(new Font("Arial", Font.BOLD, 16));
+        loginButton.setOpaque(true);
+        loginButton.setUI(new BasicButtonUI());
+        loginPanel.add(loginButton);
 
         // Add action listener for the login button
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String username = usernameField.getText();
-                String password = new String(passwordField.getPassword());
 
-                // Here, you can add your verification logic (e.g., checking against a database)
-                if (username.equals("user") && password.equals("pass")) {  // Sample verification
-                    JOptionPane.showMessageDialog(frame, "Login successful!");
+                String username = usernameField.getText().trim();
+                String password = new String(passwordField.getPassword()).trim();
+
+                if (username.isEmpty() || password.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame, "Both username and password must be filled in.", "Input Error",
+                            JOptionPane.ERROR_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(frame, "Invalid username or password", "Login Error", JOptionPane.ERROR_MESSAGE);
+                    // Perform login action here
+                    if (username.equals("user") && password.equals("pass")) { // Sample verification
+                        JOptionPane.showMessageDialog(frame, "Login successful!");
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "Invalid username or password", "Login Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
                 }
             }
         });
+
+        // Add panels to the frame
+        frame.add(imagePanel, BorderLayout.CENTER);
+        frame.add(loginPanel, BorderLayout.WEST);
+
 
         // Set the frame visibility to true
         frame.setVisible(true);

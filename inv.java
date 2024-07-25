@@ -4,6 +4,11 @@ import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class Inv extends JFrame {
 
@@ -19,7 +24,6 @@ public class Inv extends JFrame {
     JPanel mainPanel;
 
     public Inv() {
-
         setTitle("INVENTIFY");
         setSize(750, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -83,6 +87,9 @@ public class Inv extends JFrame {
                 cardLayout.show(mainPanel, "Sales Order");
             }
         });
+
+        // Load initial data from the database
+        loadDataFromDatabase();
     }
 
     private JLabel createSidebarLabel(String text) {
@@ -103,7 +110,6 @@ public class Inv extends JFrame {
             public void mouseExited(MouseEvent e) {
                 label.setBackground(new Color(247, 124, 247));
             }
-
         });
         return label;
     }
@@ -113,14 +119,7 @@ public class Inv extends JFrame {
 
         // Create the table
         String[] columnNames = { "Product ID", "Product Name", "Price", "Quantity" };
-        Object[][] data = {
-                { "1", "Product 1", "100.00", "20" },
-                { "2", "Product 2", "200.00", "15" },
-                { "3", "Product 3", "150.00", "30" },
-                { "4", "Product 4", "250.00", "10" },
-                { "5", "Product 5", "300.00", "5" },
-                { "6", "Product 6", "350.00", "8" }
-        };
+        Object[][] data = {};
 
         // Create a non-editable table model
         tableModel = new DefaultTableModel(data, columnNames) {
@@ -157,22 +156,20 @@ public class Inv extends JFrame {
         addButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                String id = idField.getText();
                 String name = nameField.getText();
                 String price = priceField.getText();
                 String quantity = quantityField.getText();
 
-                if (!id.isEmpty() && !name.isEmpty() && !price.isEmpty() && !quantity.isEmpty()) {
-                    if (id.matches("\\d+") && name.matches("[\\w\\s]+") && price.matches("\\d*\\.?\\d+")
-                            && quantity.matches("\\d+")) {
-                        tableModel.addRow(new Object[] { id, name, price, quantity });
-                        idField.setText("");
+                if (!name.isEmpty() && !price.isEmpty() && !quantity.isEmpty()) {
+                    if (name.matches("[\\w\\s]+") && price.matches("\\d*\\.?\\d+") && quantity.matches("\\d+")) {
+                        addProductToDatabase(name, price, quantity);
+                        loadDataFromDatabase();
                         nameField.setText("");
                         priceField.setText("");
                         quantityField.setText("");
                     } else {
                         JOptionPane.showMessageDialog(Inv.this,
-                                "Invalid input format. Please ensure:\n- Product ID and Quantity are integers\n- Price is a float\n- Product Name is alphanumeric",
+                                "Invalid input format. Please ensure:\n- Quantity is an integer\n- Price is a float\n- Product Name is alphanumeric",
                                 "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 } else {
@@ -241,6 +238,49 @@ public class Inv extends JFrame {
             if (component instanceof JLabel || component instanceof JTextField) {
                 component.setFont(font);
             }
+        }
+    }
+
+    private void loadDataFromDatabase() {
+        String url = "jdbc:mysql://localhost:3306/IMS";
+        String username = "root";
+        String password = "";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String query = "SELECT * FROM Product";
+            try (PreparedStatement statement = connection.prepareStatement(query);
+                    ResultSet resultSet = statement.executeQuery()) {
+
+                tableModel.setRowCount(0); // Clear existing data
+
+                while (resultSet.next()) {
+                    int id = resultSet.getInt("Product_ID");
+                    String name = resultSet.getString("Product_Name");
+                    double price = resultSet.getDouble("Price");
+                    int quantity = resultSet.getInt("Quantity");
+                    tableModel.addRow(new Object[] { id, name, price, quantity });
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addProductToDatabase(String name, String price, String quantity) {
+        String url = "jdbc:mysql://localhost:3306/IMS";
+        String username = "root";
+        String password = "";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String query = "INSERT INTO Product (Product_Name, Price, Quantity) VALUES (?, ?, ?)";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, name);
+                statement.setDouble(2, Double.parseDouble(price));
+                statement.setInt(3, Integer.parseInt(quantity));
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

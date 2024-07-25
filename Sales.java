@@ -47,25 +47,12 @@ public class Sales {
         panel.add(topPanel, BorderLayout.NORTH);
 
         // Center panel with table
-        String[] columns = { "Product Name", "Order Id", "Quantity", "Total Price" };
+        String[] columns = { "Order Id","Product Id","Product Name",  "Quantity", "Total Price" };
         Object[][] data = {
-                { "Macbook M1", "#00031", 3, "$3600" },
-                { "Bicycle", "#00032", 2, "$1380" },
-                { "Macbook M1", "#00033", 3, "$3600" },
-                { "Bicycle", "#00034", 2, "$1380" },
-                { "Macbook M1", "#00035", 3, "$3600" }, // Additional rows
-                { "Bicycle", "#00036", 2, "$1380" }, // Additional rows
-                { "Macbook M1", "#00037", 3, "$3600" }, // Additional rows
-                { "Bicycle", "#00038", 2, "$1380" },
-                { "Macbook M1", "#00031", 3, "$3600" },
-                { "Bicycle", "#00032", 2, "$1380" },
-                { "Macbook M1", "#00033", 3, "$3600" },
-                { "Bicycle", "#00034", 2, "$1380" },
-                { "Macbook M1", "#00035", 3, "$3600" }, // Additional rows
-                { "Bicycle", "#00036", 2, "$1380" }, // Additional rows
-                { "Macbook M1", "#00037", 3, "$3600" }, // Additional rows
-                { "Bicycle", "#00038", 2, "$1380" },
-                // Additional rows
+            { "#00031",1,"Macbook M1",3,"100", "$3600" },
+            { "#00031",1,"Bicycle",  2, "100","$1380" },
+                { "#00031",1,"Macbook M1",  3,"100", "$3600" },
+               
         };
 
         DefaultTableModel tableModel = new DefaultTableModel(data, columns) {

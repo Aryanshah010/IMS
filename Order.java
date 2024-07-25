@@ -19,10 +19,10 @@ public class Order {
         panel.setLayout(new GridBagLayout());
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(15, 15, 15, 15); // Padding around components
-        gbc.anchor = GridBagConstraints.WEST; // Align labels to the left
+        gbc.insets = new Insets(15, 15, 15, 15);
+        gbc.anchor = GridBagConstraints.WEST;
         gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.NONE; // Do not allow components to fill space
+        gbc.fill = GridBagConstraints.NONE;
 
         // Define the font
         Font labelFont = new Font("Arial", Font.BOLD, 15);
@@ -34,20 +34,20 @@ public class Order {
         JTextField productIdField = new JTextField(15);
         JLabel productNameLabel = new JLabel("Product Name:");
         JTextField productNameField = new JTextField(15);
-        JLabel productPriceLabel = new JLabel("Product Price:");
-        JTextField productPriceField = new JTextField(15);
         JLabel productQuantityLabel = new JLabel("Product Quantity:");
         JTextField productQuantityField = new JTextField(15);
+        JLabel productPriceLabel = new JLabel("Total Price:");
+        JTextField productPriceField = new JTextField(15);
 
         // Set the font for all labels
         setLabelFont(orderIdLabel, labelFont);
         setLabelFont(productIdLabel, labelFont);
         setLabelFont(productNameLabel, labelFont);
-        setLabelFont(productPriceLabel, labelFont);
         setLabelFont(productQuantityLabel, labelFont);
+        setLabelFont(productPriceLabel, labelFont);
 
         // Add components to the panel
-        gbc.anchor = GridBagConstraints.LINE_START; // Align labels to the left
+        gbc.anchor = GridBagConstraints.LINE_START;
         gbc.gridx = 0;
         gbc.gridy = 0;
         panel.add(orderIdLabel, gbc);
@@ -68,15 +68,15 @@ public class Order {
 
         gbc.gridx = 0;
         gbc.gridy = 3;
-        panel.add(productPriceLabel, gbc);
-        gbc.gridx = 1;
-        panel.add(productPriceField, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 4;
         panel.add(productQuantityLabel, gbc);
         gbc.gridx = 1;
         panel.add(productQuantityField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        panel.add(productPriceLabel, gbc);
+        gbc.gridx = 1;
+        panel.add(productPriceField, gbc);
 
         // Confirm Order Button
         JButton confirmButton = new JButton("Confirm Order");
@@ -185,6 +185,7 @@ public class Order {
         SwingUtilities.invokeLater(() -> {
             Order order = new Order();
             order.createAndShowGUI();
+
         });
     }
 }

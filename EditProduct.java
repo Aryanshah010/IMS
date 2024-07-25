@@ -3,6 +3,11 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class EditProduct extends JFrame {
 
@@ -131,18 +136,29 @@ public class EditProduct extends JFrame {
         // Add panel to the frame and position it at the top
         add(panel, BorderLayout.NORTH);
 
-        // Add action listener to validate and proceed
-        ActionListener actionListener = new ActionListener() {
+        // Add action listener to search button
+        searchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (validateInputs()) {
-                    JOptionPane.showMessageDialog(EditProduct.this, "All inputs are valid. Proceeding...");
-                }
+                searchProduct();
             }
-        };
+        });
 
-        updateButton.addActionListener(actionListener);
-        deleteButton.addActionListener(actionListener);
+        // Add action listener to update button
+        updateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                confirmAndUpdateProduct();
+            }
+        });
+
+        // Add action listener to delete button
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                confirmAndDeleteProduct();
+            }
+        });
 
         // Add action listener to back button
         backButton.addActionListener(new ActionListener() {
@@ -150,11 +166,129 @@ public class EditProduct extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 dispose(); // Close the current window
                 SwingUtilities.invokeLater(() -> {
-                    Inv InvFrame = new Inv(); // Replace Inv with your class name
-                    InvFrame.setVisible(true); // Open the Inv window
+                    Inv invFrame = new Inv();
+                    invFrame.setVisible(true);
                 });
             }
         });
+    }
+
+    private void searchProduct() {
+        String id = idField.getText();
+        if (id.isEmpty() || !isInteger(id)) {
+            showError("Please enter a valid Product ID.");
+            return;
+        }
+
+        String url = "jdbc:mysql://localhost:3306/IMS";
+        String username = "root";
+        String password = "";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String query = "SELECT * FROM Product WHERE Product_ID = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, Integer.parseInt(id));
+                ResultSet resultSet = statement.executeQuery();
+
+                if (resultSet.next()) {
+                    nameField.setText(resultSet.getString("Product_Name"));
+                    priceField.setText(resultSet.getString("Price"));
+                    quantityField.setText(resultSet.getString("Quantity"));
+
+                    idField.setEditable(false);
+                } else {
+                    showError("Product not found.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void confirmAndUpdateProduct() {
+        if (isFieldEmpty(idField.getText())) {
+            showError("Product ID cannot be empty.");
+            return;
+        }
+
+        if (!validateInputs()) {
+            return;
+        }
+
+        int response = JOptionPane.showConfirmDialog(this, "Are you sure you want to update this product?",
+                "Confirm Update", JOptionPane.YES_NO_OPTION);
+        if (response == JOptionPane.YES_OPTION) {
+            updateProduct();
+        }
+    }
+
+    private void updateProduct() {
+        String id = idField.getText();
+        String name = nameField.getText();
+        String price = priceField.getText();
+        String quantity = quantityField.getText();
+
+        String url = "jdbc:mysql://localhost:3306/IMS";
+        String username = "root";
+        String password = "";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String query = "UPDATE Product SET Product_Name = ?, Price = ?, Quantity = ? WHERE Product_ID = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, name);
+                statement.setDouble(2, Double.parseDouble(price));
+                statement.setInt(3, Integer.parseInt(quantity));
+                statement.setInt(4, Integer.parseInt(id));
+                statement.executeUpdate();
+
+                JOptionPane.showMessageDialog(this, "Product updated successfully.");
+                dispose(); // Close the current window
+                SwingUtilities.invokeLater(() -> {
+                    Inv invFrame = new Inv();
+                    invFrame.setVisible(true);
+                });
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void confirmAndDeleteProduct() {
+        if (isFieldEmpty(idField.getText())) {
+            showError("Product ID cannot be empty.");
+            return;
+        }
+
+        int response = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this product?",
+                "Confirm Delete", JOptionPane.YES_NO_OPTION);
+        if (response == JOptionPane.YES_OPTION) {
+            deleteProduct();
+        }
+    }
+
+    private void deleteProduct() {
+        String id = idField.getText();
+
+        String url = "jdbc:mysql://localhost:3306/IMS";
+        String username = "root";
+        String password = "";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String query = "DELETE FROM Product WHERE Product_ID = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, Integer.parseInt(id));
+                statement.executeUpdate();
+
+                JOptionPane.showMessageDialog(this, "Product deleted successfully.");
+                dispose(); // Close the current window
+                SwingUtilities.invokeLater(() -> {
+                    Inv invFrame = new Inv();
+                    invFrame.setVisible(true);
+                });
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean validateInputs() {

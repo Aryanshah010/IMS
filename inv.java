@@ -4,22 +4,16 @@ import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class Inv extends JFrame {
 
     private JTable table;
     private DefaultTableModel tableModel;
-
     private JTextField idField;
     private JTextField nameField;
     private JTextField priceField;
     private JTextField quantityField;
-
     public CardLayout cardLayout;
     JPanel mainPanel;
 
@@ -87,6 +81,9 @@ public class Inv extends JFrame {
                 cardLayout.show(mainPanel, "Sales Order");
             }
         });
+
+        // Initialize database connection and create table if not exists
+        initializeDatabase();
 
         // Load initial data from the database
         loadDataFromDatabase();
@@ -156,20 +153,29 @@ public class Inv extends JFrame {
         addButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                String id = idField.getText();
                 String name = nameField.getText();
                 String price = priceField.getText();
                 String quantity = quantityField.getText();
 
-                if (!name.isEmpty() && !price.isEmpty() && !quantity.isEmpty()) {
-                    if (name.matches("[\\w\\s]+") && price.matches("\\d*\\.?\\d+") && quantity.matches("\\d+")) {
-                        addProductToDatabase(name, price, quantity);
-                        loadDataFromDatabase();
-                        nameField.setText("");
-                        priceField.setText("");
-                        quantityField.setText("");
+                if (!id.isEmpty() && !name.isEmpty() && !price.isEmpty() && !quantity.isEmpty()) {
+                    if (id.matches("\\d+") && name.matches("[\\w\\s]+") && price.matches("\\d*\\.?\\d+")
+                            && quantity.matches("\\d+")) {
+                        if (isUniqueProductId(id)) {
+                            addProductToDatabase(id, name, price, quantity);
+                            loadDataFromDatabase();
+                            idField.setText(""); // Clear Product ID field after adding
+                            nameField.setText("");
+                            priceField.setText("");
+                            quantityField.setText("");
+                        } else {
+                            JOptionPane.showMessageDialog(Inv.this,
+                                    "Product ID already exists. Please enter a different ID.", "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
                     } else {
                         JOptionPane.showMessageDialog(Inv.this,
-                                "Invalid input format. Please ensure:\n- Quantity is an integer\n- Price is a float\n- Product Name is alphanumeric",
+                                "Invalid input format. Please ensure:\n- Quantity is an integer\n- Price is a float\n- Product Name is alphanumeric\n- Product ID is an integer",
                                 "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 } else {
@@ -219,30 +225,40 @@ public class Inv extends JFrame {
         label.setBackground(bgColor);
         label.setFont(new Font("Arial", Font.BOLD, 16));
         label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        label.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                label.setBackground(bgColor.darker());
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                label.setBackground(bgColor);
-            }
-        });
         return label;
     }
 
-    private void setFormPanelFont(Container container, Font font) {
-        for (Component component : container.getComponents()) {
-            if (component instanceof JLabel || component instanceof JTextField) {
+    private void setFormPanelFont(JPanel panel, Font font) {
+        for (Component component : panel.getComponents()) {
+            if (component instanceof JLabel) {
+                component.setFont(font);
+            } else if (component instanceof JTextField) {
                 component.setFont(font);
             }
         }
     }
 
+    private void initializeDatabase() {
+        String url = "jdbc:mysql://localhost:3306/Inventory";
+        String username = "root";
+        String password = "";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String createTableQuery = "CREATE TABLE IF NOT EXISTS Product (" +
+                    "Product_ID INT PRIMARY KEY, " +
+                    "Product_Name VARCHAR(255) NOT NULL, " +
+                    "Price DECIMAL(10, 2) NOT NULL, " +
+                    "Quantity INT NOT NULL)";
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(createTableQuery);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void loadDataFromDatabase() {
-        String url = "jdbc:mysql://localhost:3306/IMS";
+        String url = "jdbc:mysql://localhost:3306/Inventory";
         String username = "root";
         String password = "";
 
@@ -251,13 +267,14 @@ public class Inv extends JFrame {
             try (PreparedStatement statement = connection.prepareStatement(query);
                     ResultSet resultSet = statement.executeQuery()) {
 
-                tableModel.setRowCount(0); // Clear existing data
+                tableModel.setRowCount(0); // Clear existing rows
 
                 while (resultSet.next()) {
                     int id = resultSet.getInt("Product_ID");
                     String name = resultSet.getString("Product_Name");
                     double price = resultSet.getDouble("Price");
                     int quantity = resultSet.getInt("Quantity");
+
                     tableModel.addRow(new Object[] { id, name, price, quantity });
                 }
             }
@@ -266,17 +283,18 @@ public class Inv extends JFrame {
         }
     }
 
-    private void addProductToDatabase(String name, String price, String quantity) {
-        String url = "jdbc:mysql://localhost:3306/IMS";
+    private void addProductToDatabase(String id, String name, String price, String quantity) {
+        String url = "jdbc:mysql://localhost:3306/Inventory";
         String username = "root";
         String password = "";
 
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
-            String query = "INSERT INTO Product (Product_Name, Price, Quantity) VALUES (?, ?, ?)";
+            String query = "INSERT INTO Product (Product_ID, Product_Name, Price, Quantity) VALUES (?, ?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setString(1, name);
-                statement.setDouble(2, Double.parseDouble(price));
-                statement.setInt(3, Integer.parseInt(quantity));
+                statement.setInt(1, Integer.parseInt(id));
+                statement.setString(2, name);
+                statement.setDouble(3, Double.parseDouble(price));
+                statement.setInt(4, Integer.parseInt(quantity));
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -284,10 +302,31 @@ public class Inv extends JFrame {
         }
     }
 
+    private boolean isUniqueProductId(String id) {
+        String url = "jdbc:mysql://localhost:3306/Inventory";
+        String username = "root";
+        String password = "";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String query = "SELECT COUNT(*) FROM Product WHERE Product_ID = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, Integer.parseInt(id));
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getInt(1) == 0;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            Inv frame = new Inv();
-            frame.setVisible(true);
+            Inv inventoryApp = new Inv();
+            inventoryApp.setVisible(true);
         });
     }
 }

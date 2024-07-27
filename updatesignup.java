@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class SignUp {
+public class updatesignup {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Sign Up");

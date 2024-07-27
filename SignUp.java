@@ -13,19 +13,23 @@ public class SignUp {
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Set the frame to full screen
 
         JPanel mainPanel = new JPanel(new BorderLayout());
+        
 
         // Left panel for the image
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BorderLayout()); // Use BorderLayout to fit the image to the panel
         leftPanel.setPreferredSize(new Dimension(599, 0)); // Set width for the left panel
+        leftPanel.setBackground(new Color(0xFFFFED)); // Set the background color of the left panel
+        
 
         // Add the image to the left panel
         JLabel imageLabel = new JLabel(new ImageIcon(new ImageIcon("C:\\Users\\DELL\\Desktop\\inventory.jpg").getImage().getScaledInstance(600, -1, Image.SCALE_SMOOTH)));
+        imageLabel.setOpaque(false); // Make sure the image label is transparent to show the background color
         leftPanel.add(imageLabel, BorderLayout.CENTER);
 
         // Right panel container
         JPanel rightContainer = new JPanel(new GridBagLayout());
-        rightContainer.setBackground(Color.WHITE); // Set background to white
+        rightContainer.setBackground(new Color(0xADD8E6)); // Set background using color code
 
         // Right panel for form
         JPanel rightPanel = new JPanel();

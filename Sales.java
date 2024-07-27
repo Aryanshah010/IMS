@@ -5,6 +5,8 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.*;
+
 
 public class Sales {
 
@@ -19,12 +21,10 @@ public class Sales {
 
         JButton addOrderButton = new JButton("Add Orders");
         addOrderButton.setFont(new Font("Arial", Font.BOLD, 15));
-        addOrderButton.setPreferredSize(new Dimension(120, 30)); // Adjust button size if needed
+        addOrderButton.setPreferredSize(new Dimension(120, 30));
         addOrderButton.setBackground(new Color(128, 52, 235));
         addOrderButton.setOpaque(true);
         addOrderButton.setUI(new BasicButtonUI());
-
-        // Add padding to the button
         addOrderButton.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
         addOrderButton.addActionListener(new ActionListener() {
@@ -40,22 +40,15 @@ public class Sales {
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(addOrderButton);
-        buttonPanel.setBackground(topPanel.getBackground()); // Ensure buttonPanel blends with topPanel
+        buttonPanel.setBackground(topPanel.getBackground());
 
         topPanel.add(buttonPanel, BorderLayout.EAST);
 
         panel.add(topPanel, BorderLayout.NORTH);
 
         // Center panel with table
-        String[] columns = { "Order Id","Product Id","Product Name",  "Quantity", "Total Price" };
-        Object[][] data = {
-            { "#00031",1,"Macbook M1",3,"100", "$3600" },
-            { "#00031",1,"Bicycle",  2, "100","$1380" },
-                { "#00031",1,"Macbook M1",  3,"100", "$3600" },
-               
-        };
-
-        DefaultTableModel tableModel = new DefaultTableModel(data, columns) {
+        String[] columns = { "Order Id", "Product Id", "Product Name", "Quantity", "Total Price" };
+        DefaultTableModel tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false; // Make cells non-editable
@@ -96,7 +89,39 @@ public class Sales {
 
         panel.add(tableScrollPane, BorderLayout.CENTER);
 
+        // Fetch and set data for the table
+        SwingUtilities.invokeLater(() -> fetchAndSetSalesData(tableModel));
+
         return panel;
+    }
+
+    private void fetchAndSetSalesData(DefaultTableModel tableModel) {
+        String url = "jdbc:mysql://localhost:3306/Inventory";
+        String username = "root";
+        String password = "";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String query = "SELECT * FROM Orders";
+            try (PreparedStatement statement = connection.prepareStatement(query);
+                    ResultSet resultSet = statement.executeQuery()) {
+
+                // Clear the existing data in the table model
+                tableModel.setRowCount(0);
+
+                // Add new rows to the table model
+                while (resultSet.next()) {
+                    int orderId = resultSet.getInt("Order_ID");
+                    int productId = resultSet.getInt("Product_ID");
+                    String productName = resultSet.getString("Product_Name");
+                    int quantity = resultSet.getInt("Quantity");
+                    float price = resultSet.getFloat("Price");
+
+                    tableModel.addRow(new Object[] { orderId, productId, productName, quantity, price });
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void displaySalesPage() {
@@ -108,6 +133,8 @@ public class Sales {
     }
 
     public static void main(String[] args) {
-        new Sales().displaySalesPage();
+        SwingUtilities.invokeLater(() -> {
+            new Sales().displaySalesPage();
+        });
     }
 }

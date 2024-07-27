@@ -17,7 +17,6 @@ public class EditProduct extends JFrame {
     private JTextField quantityField;
 
     public EditProduct() {
-
         setTitle("INVENTIFY");
         setSize(580, 360);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -180,7 +179,7 @@ public class EditProduct extends JFrame {
             return;
         }
 
-        String url = "jdbc:mysql://localhost:3306/IMS";
+        String url = "jdbc:mysql://localhost:3306/Inventory";
         String username = "root";
         String password = "";
 
@@ -228,7 +227,12 @@ public class EditProduct extends JFrame {
         String price = priceField.getText();
         String quantity = quantityField.getText();
 
-        String url = "jdbc:mysql://localhost:3306/IMS";
+        if (!productExists(Integer.parseInt(id))) {
+            showError("Product not found.");
+            return;
+        }
+
+        String url = "jdbc:mysql://localhost:3306/Inventory";
         String username = "root";
         String password = "";
 
@@ -259,6 +263,18 @@ public class EditProduct extends JFrame {
             return;
         }
 
+        String id = idField.getText();
+        if (!isInteger(id)) {
+            showError("Product ID must be an integer.");
+            return;
+        }
+
+        // Check if the product exists before asking for confirmation
+        if (!productExists(Integer.parseInt(id))) {
+            showError("Product not found.");
+            return;
+        }
+
         int response = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this product?",
                 "Confirm Delete", JOptionPane.YES_NO_OPTION);
         if (response == JOptionPane.YES_OPTION) {
@@ -269,7 +285,7 @@ public class EditProduct extends JFrame {
     private void deleteProduct() {
         String id = idField.getText();
 
-        String url = "jdbc:mysql://localhost:3306/IMS";
+        String url = "jdbc:mysql://localhost:3306/Inventory";
         String username = "root";
         String password = "";
 
@@ -344,6 +360,27 @@ public class EditProduct extends JFrame {
 
     private void showError(String message) {
         JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private boolean productExists(int productId) {
+        String url = "jdbc:mysql://localhost:3306/Inventory";
+        String username = "root";
+        String password = "";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String query = "SELECT COUNT(*) FROM Product WHERE Product_ID = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, productId);
+                ResultSet resultSet = statement.executeQuery();
+
+                if (resultSet.next()) {
+                    return resultSet.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public static void main(String[] args) {

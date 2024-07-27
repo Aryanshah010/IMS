@@ -19,6 +19,8 @@ public class LoginPage {
 
         JLabel photoLabel = new JLabel();
         ImageIcon icon = new ImageIcon("/Users/aryanshah/Desktop/Inventify/PROJECT1.jpg");
+
+    
         Image img = icon.getImage().getScaledInstance(530, 500, Image.SCALE_SMOOTH);
         photoLabel.setIcon(new ImageIcon(img));
         imagePanel.add(photoLabel, BorderLayout.CENTER);
@@ -82,6 +84,7 @@ public class LoginPage {
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+              
                 String username = usernameField.getText().trim();
                 String password = new String(passwordField.getPassword()).trim();
 
@@ -108,3 +111,4 @@ public class LoginPage {
         frame.setVisible(true);
     }
 }
+

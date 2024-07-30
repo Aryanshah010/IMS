@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
 
-
 public class Sales {
 
     public JPanel createSalesPanel(JFrame parentFrame) {
@@ -90,7 +89,7 @@ public class Sales {
         panel.add(tableScrollPane, BorderLayout.CENTER);
 
         // Fetch and set data for the table
-        SwingUtilities.invokeLater(() -> fetchAndSetSalesData(tableModel));
+        fetchAndSetSalesData(tableModel);
 
         return panel;
     }

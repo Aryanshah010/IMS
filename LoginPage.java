@@ -3,8 +3,14 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.*;
 
 public class LoginPage {
+
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/inventory";
+    private static final String DB_USER = "root"; // replace with your DB username
+    private static final String DB_PASSWORD = ""; // replace with your DB password
+
     public static void main(String[] args) {
         // Create the frame
         JFrame frame = new JFrame("Login Page");
@@ -18,9 +24,8 @@ public class LoginPage {
         imagePanel.setLayout(new BorderLayout());
 
         JLabel photoLabel = new JLabel();
-        ImageIcon icon = new ImageIcon("/Users/aryanshah/Desktop/Inventify/PROJECT1.jpg");
+        ImageIcon icon = new ImageIcon("/Users/aryanshah/Desktop/Inventify/resources/PROJECT1.jpg");
 
-    
         Image img = icon.getImage().getScaledInstance(530, 500, Image.SCALE_SMOOTH);
         photoLabel.setIcon(new ImageIcon(img));
         imagePanel.add(photoLabel, BorderLayout.CENTER);
@@ -54,14 +59,14 @@ public class LoginPage {
         signUp.setUI(new BasicButtonUI());
         loginPanel.add(signUp);
 
-        JLabel usernameLabel = new JLabel("Username:");
-        usernameLabel.setBounds(30, 90, 150, 25);
-        usernameLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        loginPanel.add(usernameLabel);
+        JLabel mobileLabel = new JLabel("Mobile Number:");
+        mobileLabel.setBounds(30, 90, 150, 25);
+        mobileLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        loginPanel.add(mobileLabel);
 
-        JTextField usernameField = new JTextField();
-        usernameField.setBounds(30, 130, 200, 25);
-        loginPanel.add(usernameField);
+        JTextField mobileField = new JTextField();
+        mobileField.setBounds(30, 130, 200, 25);
+        loginPanel.add(mobileField);
 
         JLabel passwordLabel = new JLabel("Password:");
         passwordLabel.setBounds(30, 175, 150, 25);
@@ -84,22 +89,38 @@ public class LoginPage {
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-              
-                String username = usernameField.getText().trim();
+                String username = mobileField.getText().trim();
                 String password = new String(passwordField.getPassword()).trim();
 
                 if (username.isEmpty() || password.isEmpty()) {
-                    JOptionPane.showMessageDialog(frame, "Both username and password must be filled in.", "Input Error",
+                    JOptionPane.showMessageDialog(frame, "Both mobile number and password must be filled in.",
+                            "Input Error",
+                            JOptionPane.ERROR_MESSAGE);
+                } else if (!isTableExists()) {
+                    JOptionPane.showMessageDialog(frame, "No registered accounts found. Please sign up first.", "Error",
                             JOptionPane.ERROR_MESSAGE);
                 } else {
                     // Perform login action here
-                    if (username.equals("user") && password.equals("pass")) { // Sample verification
-                        JOptionPane.showMessageDialog(frame, "Login successful!");
+                    if (authenticateUser(username, password)) {
+                        frame.dispose(); // Close the current login page
+                        new Inv();
+                        Inv.main(null);
+                        
                     } else {
-                        JOptionPane.showMessageDialog(frame, "Invalid username or password", "Login Error",
+                        JOptionPane.showMessageDialog(frame, "Invalid mobile number or password", "Login Error",
                                 JOptionPane.ERROR_MESSAGE);
                     }
                 }
+            }
+        });
+
+        // Add action listener for the sign-up button
+        signUp.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose(); // Close the current login page
+                new SignUp();
+                SignUp.main(null); // Open the sign-up page
             }
         });
 
@@ -110,5 +131,35 @@ public class LoginPage {
         // Set the frame visibility to true
         frame.setVisible(true);
     }
-}
 
+    // Method to check if the users table exists
+    private static boolean isTableExists() {
+        String checkTableSQL = "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'inventory' AND table_name = 'users'";
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                PreparedStatement preparedStatement = connection.prepareStatement(checkTableSQL)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                int count = resultSet.getInt(1);
+                return count > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Method to authenticate user credentials
+    private static boolean authenticateUser(String mobile, String password) {
+        String query = "SELECT * FROM users WHERE mobile = ? AND password = ?";
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, mobile);
+            preparedStatement.setString(2, password);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return resultSet.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+}

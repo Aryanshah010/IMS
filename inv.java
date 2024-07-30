@@ -36,10 +36,12 @@ public class Inv extends JFrame {
         JLabel dashboardLabel = createSidebarLabel("Dashboard");
         JLabel inventoryLabel = createSidebarLabel("Inventory");
         JLabel salesLabel = createSidebarLabel("Sales Order");
+        JLabel UsersLabel = createSidebarLabel("Users");
 
         sidebar.add(dashboardLabel);
         sidebar.add(inventoryLabel);
         sidebar.add(salesLabel);
+        sidebar.add(UsersLabel);
 
         // Main content area with CardLayout
         cardLayout = new CardLayout();
@@ -49,6 +51,9 @@ public class Inv extends JFrame {
         // Add the Sales panel
         Sales sales = new Sales();
         mainPanel.add(sales.createSalesPanel(this), "Sales Order");
+
+        Users users = new Users();
+        mainPanel.add(users.createUsersPanel(this), "Users");
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sidebar, mainPanel);
         splitPane.setDividerLocation(150);
@@ -79,6 +84,14 @@ public class Inv extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 // Switch to sales panel
                 cardLayout.show(mainPanel, "Sales Order");
+            }
+        });
+
+        UsersLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Switch to Users panel
+                cardLayout.show(mainPanel, "Users");
             }
         });
 

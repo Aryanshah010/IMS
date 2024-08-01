@@ -162,12 +162,14 @@ public class Order {
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+
                 int response = JOptionPane.showConfirmDialog(frame, "Do you want to confirm this order?", "Confirm Order",
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
                 if (response == JOptionPane.YES_OPTION) {
                     // Insert order into the database
                     if (insertOrder(Integer.parseInt(orderId), Integer.parseInt(productId), productName, enteredQuantity, enteredPrice)) {
+                        updateProductQuantity(productId, enteredQuantity); // Update product quantity after order confirmation
                         JOptionPane.showMessageDialog(frame, "Order confirmed successfully!");
                         frame.dispose();
                         SwingUtilities.invokeLater(() -> {
@@ -178,7 +180,6 @@ public class Order {
                         JOptionPane.showMessageDialog(frame, "Failed to confirm order. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
-
             }
         });
 
@@ -246,7 +247,7 @@ public class Order {
     }
 
     private void fillProductDetails(String productId, JTextField nameField, JTextField quantityField,
-            JTextField priceField) {
+                                    JTextField priceField) {
         String url = "jdbc:mysql://localhost:3306/Inventory";
         String username = "root";
         String password = "";
@@ -257,18 +258,45 @@ public class Order {
                 statement.setInt(1, Integer.parseInt(productId));
                 try (ResultSet resultSet = statement.executeQuery()) {
                     if (resultSet.next()) {
-                        nameField.setText(resultSet.getString("Product_Name"));
-                        quantityField.setText(String.valueOf(resultSet.getInt("Quantity")));
-                        priceField.setText(String.valueOf(resultSet.getDouble("Price")));
+                        String productName = resultSet.getString("Product_Name");
+                        float price = resultSet.getFloat("Price");
+                        int quantity = resultSet.getInt("Quantity");
+
+                        nameField.setText(productName);
+                        quantityField.setText(String.valueOf(quantity));
+                        priceField.setText(String.valueOf(price));
                     } else {
-                        JOptionPane.showMessageDialog(null, "Product ID not found.", "Error",
-                                JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "Product ID not found. Please enter a valid Product ID.",
+                                "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean isProductDetailsFetched(String productId, String productName) {
+        String url = "jdbc:mysql://localhost:3306/Inventory";
+        String username = "root";
+        String password = "";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String query = "SELECT Product_Name FROM Product WHERE Product_ID = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, Integer.parseInt(productId));
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        String fetchedProductName = resultSet.getString("Product_Name");
+                        return fetchedProductName.equals(productName);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     private int getAvailableQuantity(String productId) {
@@ -283,42 +311,14 @@ public class Order {
                 try (ResultSet resultSet = statement.executeQuery()) {
                     if (resultSet.next()) {
                         return resultSet.getInt("Quantity");
-                    } else {
-                        return 0;
                     }
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return 0;
-        }
-    }
-
-    private boolean isProductDetailsFetched(String productId, String productName) {
-        if (productName.isEmpty()) {
-            return false;
         }
 
-        String url = "jdbc:mysql://localhost:3306/Inventory";
-        String username = "root";
-        String password = "";
-
-        try (Connection connection = DriverManager.getConnection(url, username, password)) {
-            String query = "SELECT Product_Name FROM Product WHERE Product_ID = ?";
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setInt(1, Integer.parseInt(productId));
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    if (resultSet.next()) {
-                        return productName.equals(resultSet.getString("Product_Name"));
-                    } else {
-                        return false;
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+        return 0;
     }
 
     private void initializeDatabase() {
@@ -326,16 +326,17 @@ public class Order {
         String username = "root";
         String password = "";
 
-        try (Connection connection = DriverManager.getConnection(url, username, password);
-                Statement statement = connection.createStatement()) {
-            String createTableQuery = "CREATE TABLE IF NOT EXISTS Orders (" +
-                    "Order_ID INT PRIMARY KEY, " +
-                    "Product_ID INT, " +
-                    "Product_Name VARCHAR(50), " +
-                    "Quantity INT, " +
-                    "Price DECIMAL(10, 2), " +
-                    "FOREIGN KEY (Product_ID) REFERENCES Product(Product_ID))";
-            statement.executeUpdate(createTableQuery);
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String createTableSQL = "CREATE TABLE IF NOT EXISTS Orders ("
+                    + "Order_ID INT NOT NULL, "
+                    + "Product_ID INT NOT NULL, "
+                    + "Product_Name VARCHAR(100) NOT NULL, "
+                    + "Quantity INT NOT NULL, "
+                    + "Price DECIMAL(10, 2) NOT NULL, "
+                    + "PRIMARY KEY (Order_ID))";
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(createTableSQL);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -346,13 +347,13 @@ public class Order {
         String username = "root";
         String password = "";
 
-        try (Connection connection = DriverManager.getConnection(url, username, password);
-                Statement statement = connection.createStatement()) {
-            String query = "SELECT MAX(Order_ID) AS max_order_id FROM Orders";
-            try (ResultSet resultSet = statement.executeQuery(query)) {
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String query = "SELECT MAX(Order_ID) AS max_id FROM Orders";
+            try (Statement statement = connection.createStatement();
+                 ResultSet resultSet = statement.executeQuery(query)) {
                 if (resultSet.next()) {
-                    int maxOrderId = resultSet.getInt("max_order_id");
-                    orderIdField.setText(String.valueOf(maxOrderId + 1));
+                    int maxId = resultSet.getInt("max_id");
+                    orderIdField.setText(String.valueOf(maxId + 1));
                 } else {
                     orderIdField.setText("1");
                 }
@@ -368,8 +369,8 @@ public class Order {
         String password = "";
 
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
-            String query = "INSERT INTO Orders (Order_ID, Product_ID, Product_Name, Quantity, Price) VALUES (?, ?, ?, ?, ?)";
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
+            String insertSQL = "INSERT INTO Orders (Order_ID, Product_ID, Product_Name, Quantity, Price) VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement statement = connection.prepareStatement(insertSQL)) {
                 statement.setInt(1, orderId);
                 statement.setInt(2, productId);
                 statement.setString(3, productName);
@@ -380,14 +381,32 @@ public class Order {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+        }
+
+        return false;
+    }
+
+    private void updateProductQuantity(String productId, int orderQuantity) {
+        String url = "jdbc:mysql://localhost:3306/Inventory";
+        String username = "root";
+        String password = "";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String updateSQL = "UPDATE Product SET Quantity = Quantity - ? WHERE Product_ID = ?";
+            try (PreparedStatement statement = connection.prepareStatement(updateSQL)) {
+                statement.setInt(1, orderQuantity);
+                statement.setInt(2, Integer.parseInt(productId));
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            Order orderForm = new Order();
-            orderForm.createAndShowGUI();
+            Order order = new Order();
+            order.createAndShowGUI();
         });
     }
 }

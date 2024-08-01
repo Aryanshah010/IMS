@@ -284,17 +284,30 @@ public class EditProduct extends JFrame {
 
     private void deleteProduct() {
         String id = idField.getText();
-
+    
         String url = "jdbc:mysql://localhost:3306/Inventory";
         String username = "root";
         String password = "";
-
+    
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
-            String query = "DELETE FROM Product WHERE Product_ID = ?";
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setInt(1, Integer.parseInt(id));
-                statement.executeUpdate();
-
+            // Check if there are associated orders
+            String checkQuery = "SELECT COUNT(*) FROM Orders WHERE Product_ID = ?";
+            try (PreparedStatement checkStatement = connection.prepareStatement(checkQuery)) {
+                checkStatement.setInt(1, Integer.parseInt(id));
+                ResultSet resultSet = checkStatement.executeQuery();
+    
+                if (resultSet.next() && resultSet.getInt(1) > 0) {
+                    showError("Product cannot be deleted as it has associated to orders.");
+                    return;
+                }
+            }
+    
+            // Proceed with deletion
+            String deleteQuery = "DELETE FROM Product WHERE Product_ID = ?";
+            try (PreparedStatement deleteStatement = connection.prepareStatement(deleteQuery)) {
+                deleteStatement.setInt(1, Integer.parseInt(id));
+                deleteStatement.executeUpdate();
+    
                 JOptionPane.showMessageDialog(this, "Product deleted successfully.");
                 dispose(); // Close the current window
                 SwingUtilities.invokeLater(() -> {
@@ -306,6 +319,7 @@ public class EditProduct extends JFrame {
             e.printStackTrace();
         }
     }
+    
 
     private boolean validateInputs() {
         if (isFieldEmpty(idField.getText()) || isFieldEmpty(nameField.getText()) || isFieldEmpty(priceField.getText())

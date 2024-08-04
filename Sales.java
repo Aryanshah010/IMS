@@ -6,8 +6,29 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
+import java.text.DecimalFormat;
 
 public class Sales {
+
+    // Custom cell renderer for formatting numbers as currency
+    private static class CurrencyCellRenderer extends DefaultTableCellRenderer {
+        private static final DecimalFormat format = new DecimalFormat("#,##0.00");
+        private final Font cellFont;
+
+        public CurrencyCellRenderer(Font cellFont) {
+            this.cellFont = cellFont;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (value instanceof Number) {
+                value = format.format((Number) value);
+            }
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            c.setFont(cellFont);
+            return c;
+        }
+    }
 
     public JPanel createSalesPanel(JFrame parentFrame) {
         JPanel panel = new JPanel(new BorderLayout());
@@ -56,15 +77,18 @@ public class Sales {
 
         JTable salesTable = new JTable(tableModel);
 
+        // Set row height
+        salesTable.setRowHeight(30); 
+
         // Disable column reordering
         salesTable.getTableHeader().setReorderingAllowed(false);
 
         // Apply custom font to the header
-        Font headerFont = new Font("Arial", Font.BOLD, 16);
+        Font headerFont = new Font("Arial", Font.BOLD, 20); 
         salesTable.getTableHeader().setFont(headerFont);
 
         // Create and set custom cell renderer for the table cells
-        Font cellFont = new Font("Arial", Font.PLAIN, 14);
+        Font cellFont = new Font("Arial", Font.PLAIN, 18); 
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
@@ -79,6 +103,9 @@ public class Sales {
         for (int i = 0; i < salesTable.getColumnCount(); i++) {
             salesTable.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
+
+        // Apply currency formatting to the "Total Price" column
+        salesTable.getColumnModel().getColumn(4).setCellRenderer(new CurrencyCellRenderer(cellFont));
 
         // Set preferred viewport size to enable vertical scroll bar
         salesTable.setPreferredScrollableViewportSize(new Dimension(700, 200));

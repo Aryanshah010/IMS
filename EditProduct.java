@@ -29,31 +29,30 @@ public class EditProduct extends JFrame {
         panel.setLayout(new GridBagLayout());
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(15, 15, 15, 15); // Padding around components
-        gbc.anchor = GridBagConstraints.WEST; // Align labels to the left
+        gbc.insets = new Insets(15, 15, 15, 15); 
+        gbc.anchor = GridBagConstraints.WEST; 
         gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.NONE; // Do not allow components to fill space
+        gbc.fill = GridBagConstraints.NONE; 
 
-        // Font settings
         Font labelFont = new Font("Arial", Font.BOLD, 16);
 
         // Add Product ID label and text field
         gbc.gridx = 0;
         gbc.gridy = 0;
         JLabel idLabel = new JLabel("Product ID:");
-        idLabel.setFont(labelFont); // Set font
+        idLabel.setFont(labelFont); 
         panel.add(idLabel, gbc);
 
         gbc.gridx = 1;
         idField = new JTextField();
-        idField.setPreferredSize(new Dimension(175, 30)); // Set preferred size for width
+        idField.setPreferredSize(new Dimension(175, 30)); 
         panel.add(idField, gbc);
 
         // Add Search button
         JButton searchButton = new JButton("Search");
         searchButton.setFont(new Font("Arial", Font.BOLD, 17));
-        searchButton.setPreferredSize(new Dimension(105, 30)); // Set preferred size
-        searchButton.setBackground(new Color(12, 232, 111)); // Set background color
+        searchButton.setPreferredSize(new Dimension(105, 30)); 
+        searchButton.setBackground(new Color(12, 232, 111)); 
         searchButton.setOpaque(true);
         searchButton.setUI(new BasicButtonUI());
 
@@ -64,36 +63,36 @@ public class EditProduct extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 1;
         JLabel nameLabel = new JLabel("Product Name:");
-        nameLabel.setFont(labelFont); // Set font
+        nameLabel.setFont(labelFont); 
         panel.add(nameLabel, gbc);
 
         gbc.gridx = 1;
         nameField = new JTextField();
-        nameField.setPreferredSize(new Dimension(175, 30)); // Set preferred size for width
+        nameField.setPreferredSize(new Dimension(175, 30)); 
         panel.add(nameField, gbc);
 
         // Add Price label and text field
         gbc.gridx = 0;
         gbc.gridy = 2;
         JLabel priceLabel = new JLabel("Price:");
-        priceLabel.setFont(labelFont); // Set font
+        priceLabel.setFont(labelFont); 
         panel.add(priceLabel, gbc);
 
         gbc.gridx = 1;
         priceField = new JTextField();
-        priceField.setPreferredSize(new Dimension(175, 30)); // Set preferred size for width
+        priceField.setPreferredSize(new Dimension(175, 30)); 
         panel.add(priceField, gbc);
 
         // Add Quantity label and text field
         gbc.gridx = 0;
         gbc.gridy = 3;
         JLabel quantityLabel = new JLabel("Quantity:");
-        quantityLabel.setFont(labelFont); // Set font
+        quantityLabel.setFont(labelFont); 
         panel.add(quantityLabel, gbc);
 
         gbc.gridx = 1;
         quantityField = new JTextField();
-        quantityField.setPreferredSize(new Dimension(175, 30)); // Set preferred size for width
+        quantityField.setPreferredSize(new Dimension(175, 30)); 
         panel.add(quantityField, gbc);
 
         // Add Update button
@@ -246,7 +245,7 @@ public class EditProduct extends JFrame {
                 statement.executeUpdate();
 
                 JOptionPane.showMessageDialog(this, "Product updated successfully.");
-                dispose(); // Close the current window
+                dispose(); 
                 SwingUtilities.invokeLater(() -> {
                     Inv invFrame = new Inv();
                     invFrame.setVisible(true);
@@ -309,7 +308,7 @@ public class EditProduct extends JFrame {
                 deleteStatement.executeUpdate();
     
                 JOptionPane.showMessageDialog(this, "Product deleted successfully.");
-                dispose(); // Close the current window
+                dispose(); 
                 SwingUtilities.invokeLater(() -> {
                     Inv invFrame = new Inv();
                     invFrame.setVisible(true);

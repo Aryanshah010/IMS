@@ -7,8 +7,8 @@ import java.sql.*;
 public class Users {
 
     private static final String DB_URL = "jdbc:mysql://localhost:3306/inventory";
-    private static final String DB_USER = "root"; // replace with your DB username
-    private static final String DB_PASSWORD = ""; // replace with your DB password
+    private static final String DB_USER = "root"; 
+    private static final String DB_PASSWORD = ""; 
 
     public JPanel createUsersPanel(JFrame parentFrame) {
         JPanel panel = new JPanel(new BorderLayout());
@@ -32,15 +32,17 @@ public class Users {
 
         JTable usersTable = new JTable(tableModel);
 
+        usersTable.setRowHeight(30); 
+
         // Disable column reordering
         usersTable.getTableHeader().setReorderingAllowed(false);
 
         // Apply custom font to the header
-        Font headerFont = new Font("Arial", Font.BOLD, 16);
+        Font headerFont = new Font("Arial", Font.BOLD, 20); 
         usersTable.getTableHeader().setFont(headerFont);
 
         // Create and set custom cell renderer for the table cells
-        Font cellFont = new Font("Arial", Font.PLAIN, 14);
+        Font cellFont = new Font("Arial", Font.PLAIN, 18); 
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,

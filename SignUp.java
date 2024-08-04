@@ -13,8 +13,8 @@ import javax.imageio.ImageIO;
 public class SignUp {
 
     private static final String DB_URL = "jdbc:mysql://localhost:3306/inventory";
-    private static final String DB_USER = "root"; // replace with your DB username
-    private static final String DB_PASSWORD = ""; // replace with your DB password
+    private static final String DB_USER = "root"; 
+    private static final String DB_PASSWORD = ""; 
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Sign Up");
@@ -146,7 +146,7 @@ public class SignUp {
 
         // Create panel for buttons with FlowLayout
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 0));
-        buttonPanel.setBackground(Color.PINK); // Match the right panel background
+        buttonPanel.setBackground(Color.PINK); 
 
         JButton signUpButton = new JButton("Sign Up");
         signUpButton.setBackground(new Color(145, 75, 250));

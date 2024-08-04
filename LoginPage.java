@@ -8,11 +8,11 @@ import java.sql.*;
 public class LoginPage {
 
     private static final String DB_URL = "jdbc:mysql://localhost:3306/inventory";
-    private static final String DB_USER = "root"; // replace with your DB username
-    private static final String DB_PASSWORD = ""; // replace with your DB password
+    private static final String DB_USER = "root"; 
+    private static final String DB_PASSWORD = ""; 
 
     public static void main(String[] args) {
-        // Create the frame
+
         JFrame frame = new JFrame("Login Page");
         frame.setSize(820, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -100,9 +100,8 @@ public class LoginPage {
                     JOptionPane.showMessageDialog(frame, "No registered accounts found. Please sign up first.", "Error",
                             JOptionPane.ERROR_MESSAGE);
                 } else {
-                    // Perform login action here
                     if (authenticateUser(username, password)) {
-                        frame.dispose(); // Close the current login page
+                        frame.dispose(); 
                         new Inv();
                         Inv.main(null);
                         
@@ -118,17 +117,16 @@ public class LoginPage {
         signUp.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frame.dispose(); // Close the current login page
+                frame.dispose(); 
                 new SignUp();
-                SignUp.main(null); // Open the sign-up page
+                SignUp.main(null); 
             }
         });
 
         // Add panels to the frame
         frame.add(imagePanel, BorderLayout.CENTER);
         frame.add(loginPanel, BorderLayout.WEST);
-
-        // Set the frame visibility to true
+        
         frame.setVisible(true);
     }
 

@@ -55,12 +55,17 @@ public class Inv extends JFrame {
         Users users = new Users();
         mainPanel.add(users.createUsersPanel(this), "Users");
 
+        Dashboard dashboard = new Dashboard();
+        mainPanel.add(dashboard, "Dashboard"); 
+
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sidebar, mainPanel);
         splitPane.setDividerLocation(150);
         splitPane.setEnabled(false);
 
         // Add components to the frame
         add(splitPane, BorderLayout.CENTER);
+
+        cardLayout.show(mainPanel, "Dashboard");
 
         // Add action listeners for the sidebar labels
         dashboardLabel.addMouseListener(new MouseAdapter() {
@@ -201,7 +206,7 @@ public class Inv extends JFrame {
         editButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                dispose(); // Close the current window
+                dispose(); 
                 SwingUtilities.invokeLater(() -> {
                     EditProduct editProductFrame = new EditProduct();
                     editProductFrame.setVisible(true);
